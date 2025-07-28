@@ -1,4 +1,4 @@
 
 ### Listar orders via REST
-GET http://localhost:8080/order
+GET http://localhost:8080/orders
 Accept: application/json
