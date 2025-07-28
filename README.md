@@ -56,7 +56,7 @@ go run ./cmd/ordersystem
 
 ## 🌐 Portas
 
-- REST: `http://localhost:8080/order`
+- REST: `http://localhost:8080/orders`
 - gRPC: `localhost:50051`
 - GraphQL: (configure endpoint com gqlgen)
 
