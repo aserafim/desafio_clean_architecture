@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"desafio_clean_architecture/internal/domain/entity"
+	"desafio_clean_architecture/internal/entity"
 )
 
 type OrderRepository struct {
@@ -11,6 +11,14 @@ type OrderRepository struct {
 
 func NewOrderRepository(db *sql.DB) *OrderRepository {
 	return &OrderRepository{db: db}
+}
+
+func (r *OrderRepository) Save(order *entity.Order) error {
+	_, err := r.db.Exec(
+		"INSERT INTO orders (id, product, price, created_at) VALUES ($1, $2, $3, $4)",
+		order.ID, order.Product, order.Price, order.CreatedAt,
+	)
+	return err
 }
 
 func (r *OrderRepository) ListOrders() ([]entity.Order, error) {

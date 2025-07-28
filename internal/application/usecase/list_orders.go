@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"desafio_clean_architecture/internal/domain/entity"
+	"desafio_clean_architecture/internal/entity"
 )
 
 type OrderLister interface {

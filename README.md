@@ -1,52 +1,47 @@
+# 🧱 Desafio Clean Architecture
 
-# Desafio Clean Architecture - Listagem de Orders
+Este projeto implementa uma aplicação de gerenciamento de pedidos (`orders`) seguindo os princípios da **Clean Architecture**, com suporte a:
 
-Este projeto implementa a listagem de pedidos utilizando **Clean Architecture** com suporte a REST, gRPC e GraphQL.
-
----
-
-## 🚀 Tecnologias
-
-- Go
-- PostgreSQL (via Docker)
-- REST (GET /order)
-- gRPC (`ListOrders`)
-- GraphQL (`listOrders`)
-- gqlgen
-- protoc
+- ✅ REST API
+- ✅ gRPC API
+- ✅ GraphQL API
 
 ---
 
-## 📦 Entidade Order
+## 📦 Tecnologias
 
-```go
-type Order struct {
-  ID        string
-  Product   string
-  Price     float64
-  CreatedAt time.Time
-}
-```
+- Golang
+- PostgreSQL
+- gRPC
+- GraphQL (GQLGen)
+- Docker / Docker Compose
 
 ---
 
-## 🔧 Como executar
+## 🚀 Como rodar
 
-### 1. Subir o banco de dados
+### 1. Clonar o repositório
+
 ```bash
-docker compose up -d
+git clone https://github.com/seuusuario/desafio_clean_architecture.git
+cd desafio_clean_architecture
+````
+
+### 2. Subir a infraestrutura com Docker
+
+```bash
+docker-compose up -d
 ```
 
-Banco de dados:
-- host: `localhost`
-- port: `5432`
-- user: `postgres`
-- password: `postgres`
-- db: `orders_db`
+Isso irá:
+
+* Subir o banco PostgreSQL (`orders_db`)
+* Criar a tabela `orders`
+* Inserir pedidos de exemplo (via migrations)
 
 ---
 
-### 2. Executar aplicação Go (REST + gRPC + GraphQL)
+## ▶️ Rodar a aplicação
 
 ```bash
 go run ./cmd/ordersystem
@@ -54,32 +49,105 @@ go run ./cmd/ordersystem
 
 ---
 
-## 🌐 Portas
+## 📚 Endpoints
 
-- REST: `http://localhost:8080/orders`
-- gRPC: `localhost:50051`
-- GraphQL: (configure endpoint com gqlgen)
+### ✅ REST - Porta `:8080`
 
----
+| Método | Rota      | Descrição        |
+| ------ | --------- | ---------------- |
+| GET    | `/orders` | Lista os pedidos |
 
-## 🧪 Testes com HTTP
+Exemplo com `curl`:
 
-Veja o arquivo [`api/api.http`](api/api.http) para testar com REST Client.
-
----
-
-## ⚙️ gRPC
-
-### Gerar arquivos
 ```bash
-protoc --go_out=. --go-grpc_out=. api/proto/order.proto
+curl http://localhost:8080/orders
 ```
 
 ---
 
-## ⚙️ GraphQL
+### 🔁 GraphQL - Porta `:8080`
 
-### Gerar arquivos gqlgen
-```bash
-go run github.com/99designs/gqlgen generate
+* Playground: [http://localhost:8080](http://localhost:8080)
+
+#### 📘 Exemplo de query:
+
+```graphql
+query {
+  listOrders {
+    id
+    product
+    price
+    createdAt
+  }
+}
 ```
+
+---
+
+### 📡 gRPC - Porta `:50051`
+
+#### ✅ Listar pedidos
+
+```bash
+grpcurl -plaintext \
+  -proto internal/infra/grpc/protofiles/order.proto \
+  localhost:50051 \
+  orderpb.OrderService/ListOrders
+```
+
+#### ✅ Criar pedido
+
+```bash
+grpcurl -plaintext \
+  -d '{"id": "550e8400-e29b-41d4-a716-446655440999", "price": 400, "tax": 40}' \
+  -proto internal/infra/grpc/protofiles/order.proto \
+  localhost:50051 \
+  orderpb.OrderService/CreateOrder
+```
+
+---
+
+## 🧪 Testes
+
+Você pode rodar os testes com:
+
+```bash
+go test ./...
+```
+
+---
+
+## 🗃️ Estrutura do projeto
+
+```text
+internal/
+  application/      # Casos de uso
+  domain/           # Entidades de domínio
+  infra/            # Interfaces (http, grpc, graphql)
+  usecase/          # Casos de uso específicos
+
+cmd/ordersystem/    # Entrypoint da aplicação
+api/                # Arquivos .proto e api.http
+graph/              # Schema GraphQL
+migrations/         # SQL de criação/inserção
+```
+
+---
+
+## ✅ Checklist do desafio
+
+| Item                           | Status      |
+| ------------------------------ | ----------- |
+| REST: GET `/orders`            | ✅ Concluído |
+| gRPC: ListOrders + CreateOrder | ✅ Concluído |
+| GraphQL: Query `listOrders`    | ✅ Concluído |
+| Docker + banco PostgreSQL      | ✅ Concluído |
+| Migrations automáticas         | ✅ Concluído |
+| Arquivo `api.http`             | ✅ Concluído |
+| README.md com instruções       | ✅ Concluído |
+
+---
+
+## ✍️ Autor
+
+Alefe Abdiel Correia Serafim

@@ -4,13 +4,29 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
 
 	_ "github.com/lib/pq"
 
+	"google.golang.org/grpc"
+
 	"desafio_clean_architecture/internal/application/usecase"
 	httpHandler "desafio_clean_architecture/internal/infra/http"
 	"desafio_clean_architecture/internal/infra/repository"
+
+	// gRPC
+	grpcHandler "desafio_clean_architecture/internal/infra/grpc"
+	"desafio_clean_architecture/internal/infra/grpc/pb/orderpb"
+
+	// GraphQL
+	graph "desafio_clean_architecture/internal/infra/graph"
+	"desafio_clean_architecture/internal/infra/graph/generated"
+
+	graphqlHandler "github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
+
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -24,9 +40,39 @@ func main() {
 	listUC := usecase.NewListOrdersUseCase(repo)
 	handler := httpHandler.NewOrderHandler(listUC)
 
+	// REST endpoint
 	http.HandleFunc("/orders", handler.ListOrders)
 
-	fmt.Println("REST API running at http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	// GraphQL endpoint
+	graphQLSrv := graphqlHandler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{
+		Resolvers: &graph.Resolver{
+			OrderRepo: repo,
+		},
+	}))
+	http.Handle("/graphql", graphQLSrv)
+	http.Handle("/", playground.Handler("GraphQL Playground", "/graphql"))
 
+	// gRPC server em goroutine
+	go func() {
+		listener, err := net.Listen("tcp", ":50051")
+		if err != nil {
+			log.Fatalf("failed to listen on gRPC port: %v", err)
+		}
+
+		grpcServer := grpc.NewServer()
+		grpcOrderService := grpcHandler.NewOrderServiceServer(listUC)
+		orderpb.RegisterOrderServiceServer(grpcServer, grpcOrderService)
+
+		reflection.Register(grpcServer)
+
+		fmt.Println("gRPC server running at :50051")
+		if err := grpcServer.Serve(listener); err != nil {
+			log.Fatalf("failed to serve gRPC: %v", err)
+		}
+
+	}()
+
+	// HTTP (REST + GraphQL)
+	fmt.Println("HTTP server running at http://localhost:8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }

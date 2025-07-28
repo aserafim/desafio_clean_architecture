@@ -6,7 +6,7 @@ package graph
 
 import (
 	"context"
-
+	"desafio_clean_architecture/internal/infra/graph/generated"
 	"desafio_clean_architecture/internal/infra/graph/model"
 	"desafio_clean_architecture/internal/usecase"
 )
@@ -30,7 +30,7 @@ func (r *mutationResolver) CreateOrder(ctx context.Context, input *model.OrderIn
 	}, nil
 }
 
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+// Mutation returns generated.MutationResolver implementation.
+func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 type mutationResolver struct{ *Resolver }
